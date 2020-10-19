@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="https://unpkg.com/mvp.css" />
+    <!-- assets needed for open layers -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.4.3/css/ol.css"
+      type="text/css"
+    />
+    <script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.4.3/build/ol.js"></script>
+
+    <!-- assets to add syntax highlihting -->
+    <link
+      rel="stylesheet"
+      href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@10.3.1/build/styles/default.min.css"
+    />
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@10.3.1/build/highlight.min.js"></script>
+    <script>
+      // adding syntax highlighting for <code>
+      hljs.initHighlightingOnLoad();
+    </script>
+    <title>Javascript Geolocation Example</title>
+  </head>
+  <body>
+    <header>
+      <h1>Geolocation Example in Vanilla Javascript</h1>
+      <p>By Daniel Lee</p>
+    </header>
+
+    <main>
+      <h3>Technologies Used</h3>
+      <ul>
+        <li>
+          <a
+            target="_blank"
+            href="https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API"
+          >
+            Browser Native navigator API
+          </a>
+        </li>
+        <li>
+          <a
+            href="https://openlayers.org/en/latest/doc/quickstart.html"
+            target="_blank"
+          >
+            Open Layers open source Map API
+          </a>
+        </li>
+      </ul>
+      <p>
+        Most browsers allow you to simply query the geo location after asking
+        for user permissions
+      </p>
+      <button id="geolocation-button">Query for Geo-Location</button>
+      <pre>
+        <code>
+function queryGeoLocation(successCallback, failureCallback) {
+  if(!navigator.geolocation) {
+    alert('Your browser does not support geo location')
+  } else {
+    // navigator is a global object present in the DOM / Browser
+    navigator
+      .geolocation
+      .getCurrentPosition(successCallback, failureCallback);
+  }
+}
+        </code>
+      </pre>
+      <p>Map will appear below on successful query.</p>
+      <div id="map" style="width: 400px; height: 400px"></div>
+
+      <p>
+        Using the Open Layers Map API is free and doesn't require an API key. <br> All I did was import these assets in the top of my HTML file.
+      </p>
+      <pre>
+        <code>
+&lt;!-- assets needed for open layers -->
+&lt;link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.4.3/css/ol.css"
+  type="text/css"
+/>
+&lt;script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.4.3/build/ol.js"></script>
+        </code>
+      </pre>
+      <p>Here is how my code looks like:</p>
+      <pre>
+        <code class="javascript">
+function renderMap(domId, positionObj) {
+  const { latitude, longitude } = positionObj.coords;
+
+  new ol.Map({
+    target: domId,
+    layers: [
+      new ol.layer.Tile({
+        source: new ol.source.OSM(),
+      }),
+    ],
+    view: new ol.View({
+      center: ol.proj.fromLonLat([longitude, latitude]),
+      zoom: 10,
+    }),
+  });
+}
+        </code>
+      </pre>
+      <p>
+        <b>NOTE:</b> My <code>onSuccessCallback</code> in my previous
+        <code>queryGeoLocation</code> function takes a success callback which
+        renders the map object to the DOM.
+      </p>
+    </main>
+
+    <script type="text/javascript">
+      document
+        .getElementById("geolocation-button")
+        .addEventListener("click", () =>
+          queryGeoLocation(onSuccessCallback("map", renderMap), () =>
+            alert("Something went wrong!")
+          )
+        );
+
+      function queryGeoLocation(successCallback, failureCallback) {
+        if (!navigator.geolocation) {
+          alert("Your browser does not support geo location");
+        } else {
+          navigator.geolocation.getCurrentPosition(
+            successCallback,
+            failureCallback
+          );
+        }
+      }
+
+      function onSuccessCallback(domId, renderMapCallback) {
+        return function (positionObj) {
+          renderMapCallback(domId, positionObj);
+        };
+      }
+
+      function renderMap(domId, positionObj) {
+        const { latitude, longitude } = positionObj.coords;
+
+        new ol.Map({
+          target: domId,
+          layers: [
+            new ol.layer.Tile({
+              source: new ol.source.OSM(),
+            }),
+          ],
+          view: new ol.View({
+            center: ol.proj.fromLonLat([longitude, latitude]),
+            zoom: 10,
+          }),
+        });
+      }
+    </script>
+  </body>
+</html>
